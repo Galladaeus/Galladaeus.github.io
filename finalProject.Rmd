@@ -1,0 +1,350 @@
+---
+title: "CMSC320 Final Project"
+author: "Titus Rasmussen"
+date: "May 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/home/titus/Code/projects/schoolProjects/cmsc330/finalProject")
+```
+
+# Introduction to Data Science <br/><br/>
+
+## Introduction <br/>
+
+According to wikipedia, **data science** is 
+
+> A multi-disciplinary field that uses scientific methods, processes, algorithms, and systems to extract knowledge and insights from structured and unstructured data. 
+
+In this tutorial we will be looking at some of those methods, processes, algorithms and systems.
+
+The data that we will be looking at in this tutorial is the set of all Kickstarter projects up to 2018. From this data set we will try to answer some questions such as; what type of projects tend to raise the most money? Which projects are the most successful? How many projects make no money at all? <br/>
+
+## Set up <br/>
+
+To follow along with this tutorial you will need to download R and RStudio;
+
+- Download R: https://cran.r-project.org
+
+- Download RStudio: https://www.rstudio.com/products/rstudio/download/
+
+You will also need to download the data set;
+
+- Kickstarter Data: https://www.kaggle.com/kemical/kickstarter-projects#ks-projects-201801.csv
+
+You will also need to download some useful packages in RStudio. Packages are a set of R functions that provide useful functionality and algorithms for manipulating your data. For this tutorial you will need to install the tidyverse and dplyr packages. Tidyverse itself is a series of useful packages helpful for cleaning up or 'tidying' data. And dplyr is a grammar for manipulating data. 
+
+How to install packages in RStudio:
+
+1. In the tabs at the top of RStudio click the Tools tab
+
+2. Click the <install packages...> button
+
+3. Type the packages you want to install into the Packages text entry box, to install multiple packages separate them with commas.
+
+Now that you have the necessary packages and programs, we can get started actually handling our data. <br/><br/>
+
+## Basic RStudio
+
+Before getting started with RStudio there are a few things to know about RStudio;
+
+For this tutorial, all the r coding can be done inside of the console. Whatever variables you store will be stored in the environment for the current session. 
+
+The environment is the the current set of working data we have in our session. You can see the environment in the upper right corner of RStudio.
+
+R uses the <- operator to store variables. In order to see this in action, try typing x <- 5 into the console. You should see the variable x stored in the environment with the value of 5. 
+
+The format of R functions is similar to most other languages, just type in the function name followed by parenthesis that contain the arguments. For example the function c(arg1, arg2, arg3...) concatenates the elements you provide to it and return them as a list. E.G.
+
+```{r basics}
+lst <- c(1,2,3,4,5,6,7,8,9)
+
+# Simply entering a variable name in the console will print its' contents
+lst
+```
+
+A new variable should show up your environment that is a list of the numbers 1...9. 
+
+If you want to know more about a function you can always type ?FUNCTION_NAME to bring up more information, e.g.
+
+```{r basics2}
+# Find out more about the c function
+?c
+```
+
+There is much more to RStudio, but this is all you need to know in order to follow this tutorial. A more comprehensive intro to RStudio basics can be found at https://datascienceplus.com/introduction-to-rstudio/ <br/><br/>
+
+## 1. Loading Data <br/>
+
+The process of collecting and loading data isn't an exact science and can often be a messy process. There are many different ways of collecting data, whether it is manually, through classic data collection methods like surveys and forms, scraping information from the web, and finding/downloading already curated data sets. 
+
+Scraping from the web is an important skill to have as a data scientist but for this tutorial we will not be doing any scraping, if you wish to learn more about scraping, there is a useful tutorial from DataCamp at https://www.datacamp.com/community/tutorials/r-web-scraping-rvest
+
+In this tutorial we will be using a data set from Kaggle that has already been cleaned up and collected into a csv file.
+
+> CSV File - a file of comma separated values, formatted in a way for easy data parsing. This type of file 'stores tabular data in plain text'
+
+Kaggle is a data science website that has a lot of data sets that have already been set up in an easily handled format and are ready to be downloaded and utilized.
+
+In order to start working with our data inside of R we need to load the data into our environment.
+
+*If the environment isn't showing up, you can open it up by pulling up the view tab and clicking Show Environment.
+
+All of the work for this tutorial can be done in the console, this is where you will type the R code to run. <br/><br/>
+
+#### **read_csv()** <br/>
+
+Before we can load the csv file using R there are two things we need to do, first make sure that the .csv file you downloaded is in your current working directory or you will need to provided the full file path name. To find out your current working directory you can type getwd() in the console, move the .csv to that directory or use setwd("DIRECTORY_PATH") to change the working directory. 
+
+Next you will need to load the tidyverse package that you installed earlier. To do this just type library(tidyverse).
+
+```{r load_tidyverse, message=FALSE}
+library(tidyverse)
+```
+
+The tidyverse contains a function called read_csv() that attempts to convert a .csv file into a tibble, which is a special type of dataframe. Dataframes/tibbles are the main sort of datatype that we work with when dealing with data in R.
+
+> Dataframe - (From https://www.tutorialspoint.com/r/r_data_frames.htm) "A data frame is a table or a two-dimensional array-like structure in which each column contains values of one variable and each row contains one set of values from each column."
+
+While we technically have a tibble in this case, the exact differences are not too important for the purposes of this tutorial, essentially though, a tibble is a dataframe formatted to be easier to work with.
+
+In order to get the dataframe use the read_csv function and store it in a variable.
+
+```{r load_data, message=FALSE}
+kickstart_frame <- read_csv("ks-projects-201801.csv")
+```
+
+<br/>
+
+## 2. Reading and Selecting DataFrames <br/>
+
+Before we start looking at our data it is important to have an understanding of what the data is that you are looking at. In this tutorial we are looking at data for all kickstarter projects up to 2018. Kickstarter is a crowdfunding platform used to help independent creators fund and launch their ideas. This data set contains information about whether the project failed, how much was funded, what type of project it was, and more. For more information you can go to the official website at https://www.kickstarter.com/
+
+Now lets take a look at our data to see what it looks like
+
+```{r view_data}
+# slice returns a slice of a given data frame, here we tell it to give us entities 21 to 30 (inclusive)
+slice(kickstart_frame, 21:30)
+```
+
+Here we can see there is a lot of information being thrown at us; 
+
+First, the names at the top of each column represent the attributes that each entity has. For example each entity has an ID, name, category, goal, etc. These represent the various pieces of information we have about each entity, this is the information we will use to extrapolate interesting results from our data. Each attribute also has a data type, for example, name is a string, goal is a double, and deadline is a date.
+
+Each row represents an entity that has individual values for each attribute. From now on, when we reference entities, we are talking about rows and when we reference categories, we are referencing the columns.
+
+To easily see all the attributes of our data we can use colnames
+
+```{r attr}
+colnames(kickstart_frame)
+```
+
+#### <br/>**select()** <br/>
+
+One of the most basic functions for manipulating our data is the select function, this will allow us to get a data frame with only the attributes we want. 
+
+For example, say we want a dataframe that only contains the name of the project, how much it raised, and the date it was launched on kickstarter then we would write
+
+```{r select}
+select(kickstart_frame, "name", "launched", "usd pledged")
+```
+
+#### <br/>**filter()** <br/>
+
+Another very useful function in manipulating our data is the filter function, this function allows us to only show entities that satisfy certain requirements. Filter takes a data set and a series of boolean statements. For example, if we want to only show projects that are Animations and were successfully funded then we could write:
+
+```{r funded_anim}
+filter(kickstart_frame, category=="Animation", state=="successful")
+# filter(kickstart_frame, category=="Animation" & state=="successful") also does the same things
+```
+
+<br/>
+
+## 3. Manipulating DataFrames with dplyr and more Functions
+
+When we want to start really making changes to our data it becomes necessary to use multiple functions on our data set. For example if we wanted to compose our previous examples and take a sample of only the projects that are Animations and were Successful and we only want their name, category, and amount pledged we could write something like;
+
+```{r confusing}
+success_anim <- slice(select(filter(kickstart_frame, category=="Animation", state=="successful"), "name", "category", "usd pledged"), 1:10)
+success_anim
+```
+
+We could also compose them with different variables, but then we would end up with a messy environment. 
+
+#### <br/>**infix operator %>%** <br/>
+
+So our solution to this problem is to use the dplyr package, this package is a grammar that allows us to compose multiple functions together in a readable manner using the infix operator %>%. It passes the result from a function to the next function, e.g.
+
+```{r basic_infix}
+# First we need to import the package
+library(dplyr)
+
+# Selecting names from our dataframe using the infix operator
+kickstart_frame %>%
+  select("name")
+
+# This is the same as saying select(kickstart_frame, "name")
+```
+
+* The %>% operator actually comes from the magrittr package, but is included in dplyr
+
+This small example doesn't seem to make much of a difference here, but it really comes in handy when composing multiple function calls, lets rewrite our earlier composition of functions using the infix operator;
+
+```{r useful_infix}
+kickstart_frame %>%
+  filter(category=="Animation", state=="successful") %>%
+  select("name", "category", "usd pledged") %>%
+  slice(1:10)
+```
+
+As you can see here, the infix operator makes our code much more readable than putting many functions within each other. Each use of the infix operator passes the result to the first parameter of the next function call.
+
+Now that we know the basics of functions and function composing, lets go over some more functions that will allow us to glean information from our data. 
+
+#### <br/>**mutate()** <br/>
+
+Mutate allows us to modify our data table and add new attributes. For example if we wanted to have an attribute that showed how far each project was away from reaching its goal;
+
+```{r how_far}
+# Mutating and then selecting so we can see the new attribute
+df <- kickstart_frame %>%
+  mutate(dist_from_goal=goal-pledged) %>%
+  select("name", "pledged", "goal", "dist_from_goal") %>%
+  slice(1:10)
+df
+```
+
+Now we have a useful table that tells us how far each project was away from reaching its goal at the end of its deadline.
+
+#### <br/>**summarize()** <br/>
+
+Summarize allows us to summarize our table in a few desired pieces of data, for example, continuing with our example from above, if we wanted to see how far on average a project was from its goal, and min and maximum goals;
+
+```{r summary}
+df %>%
+  summarize(min_goal=min(goal), max_goal=max(goal), avg_dist_from_goal=mean(dist_from_goal))
+```
+
+From this summary we can see that the average distance to the project goal isn't super useful because of the wide range between min and max goals. Since some projects require far more money than others we need some way to break down this information even more, one way we can do this is by using the group_by function.
+
+#### <br/>**group_by()** <br/>
+
+group_by() allows us to group our data into smaller groups so that when we perform operations on them each group has operations performed on them independently. So for example, if we theorize that we can get a better sense of the average of how far each project that fails is away from its goal if we group them by categories. i.e. we assume that video games probably have a higher average goal, and projects like art have a lower average goal.
+
+```{r grouping}
+# Remake our df to include category
+df <- kickstart_frame %>%
+  select("name", "category", "pledged", "goal") %>%
+  mutate(dist_from_goal=goal-pledged)
+
+ df <- df %>% 
+  group_by(category) %>%
+  summarize(min_goal=min(goal), max_goal=max(goal), avg_dist_from_goal=mean(dist_from_goal), count=n())
+# n() gives us the number of observations in each group
+ 
+df
+```
+
+Looking at this chart, we now have a better view at different projects, for example we can see there are a lot of dummy projects that have a minimum goal of 1.00, that may be because the creator just wants any money they can get, or it may be because they aren't posting a serious project. Also we can see a wide range in the max_goals of diffrent projects, with some projects having extremely high goals. But even with all this information we still don't have much information, the goals are in different currencies, and we are including both successful and failed projects. And on Kickstarter, may successful projects can be extreme outliers that would greatly affect the average distance from goal for certain categories.
+
+Lets make one more observation using group_by, lets try and find the category that has had the most money pledged overall
+
+```{r most_pledged}
+kickstart_frame %>%
+  select("category", "main_category", "usd_pledged_real") %>%
+  group_by(category, main_category) %>%
+  summarize(total_pledged = sum(usd_pledged_real)) %>%
+  arrange(desc(total_pledged)) %>%
+  ungroup() %>%
+  slice(1:10)
+```
+
+The arrange() function allows us to arrange data in order based on a provided attribute, in this case we wanted to order based on the amount pledged, starting from the highest value first. And then we had to ungroup in order to allow us to slice the data.
+
+From this chart we can see the 10 most funded categories, with Tabletop Games and Product Design vastly overshadowing other categories.
+
+But now we have many of the basic tools we need in order to start doing some analysis on this data set, so lets get into graphing and visualizing our data.
+
+## 4. Visualizing Data with ggplot
+
+When looking at our data so far we have just been looking at the raw numbers and data. But it can be very useful to create graphs and visualizations for our data in order to help us interpret the data.
+
+The primary way through which we can create visualizations in R is using ggplot, lets see a basic example
+
+```{r basic_plot}
+df %>%
+  filter(count > 10000) %>%
+  ggplot(mapping=aes(y=avg_dist_from_goal, x=category)) +
+    geom_point()
+```
+
+ggplot's format is
+
+> ggplot(mapping=aes(data=DATA_FRAME, x=X-AXIS_DATA, y=Y-AXIS_DATA)) + DRAWING_FORMAT
+
+ggplot goes very in depth with the graphs and plots you can create you can learn much more at http://r-statistics.co/Complete-Ggplot2-Tutorial-Part1-With-R-Code.html
+
+Here we created a plot that shows categories with more than 10,000 projects and their average distance from their goals. Already from this basic plot we can get some interesting insights, we might theorize that projects that have a smaller startup cost tend to be funded more, since Food, Music, Product Design, shorts, and Tabletop Games all generally cost lest to make than Video Games, Film & Video and Documentaries. We also see that the only category here that has a negative average distance is Tabletop Games, from which we can theorize that out of the most common categories, if you try funding a Tabletop Game you are more likely to succeed. 
+
+With this in mind, we may want to create another graph that shows the number of projects that succeed vs fail for a given category
+
+```{r percent_success}
+df <- kickstart_frame %>%
+  select("category", "state") %>%
+  filter(state=="failed"|state=="successful"|state=="cancelled") %>%
+  group_by(category, state) %>%
+  summarize(count=n()) %>%
+  filter(count > 3000) %>%
+  ggplot(mapping=aes(y=count, x=category, color=state)) +
+    geom_point() +
+    theme(axis.text.x=element_text(angle=90))
+df
+```
+
+We used the color argument of aes in order to show the failed vs successful count on our plot
+
+With this graph we can take a look at the differences between the number of successful launches vs the number of failures. From this we can see that most projects in most of the more common categories fail, except for Indie Rock, Rock, Shorts, Tabletop Games, and Theater. From this, we are further convinced that if we want to fund a project through kickstarter, Tabletop games is the way to go.
+
+Let's make one more interesting plot using ggplot, lets say we want to look at the most successful projects and show them in relation to their categories.
+
+```{r successful_projects}
+kickstart_frame %>%
+  select("category", "main_category", "usd_pledged_real") %>%
+  filter(usd_pledged_real>3000000) %>%
+  ggplot(mapping=aes(x=main_category, y=usd_pledged_real, color=category)) +
+    geom_point() +
+    theme(axis.text.x=element_text(angle=90))
+```
+
+## 5. Linear Regression
+
+Lets say we make a hypothesis that bigger projects have more more backers, but each backer contributes less on average to the project. In order to test this, the first thing we will want to do is organize our data.
+
+```{r data}
+df <- kickstart_frame %>%
+  select("main_category", "goal", "pledged", "backers", "usd_pledged_real", "usd_goal_real") %>%
+  filter(backers>20000) %>%
+  mutate(average_backer_pledge=usd_pledged_real/backers)
+
+df %>% ggplot(mapping=aes(x=backers, y=average_backer_pledge)) +
+  geom_point() +
+  geom_smooth(method=lm)
+```
+
+From this graph, it looks like their is a wild flucuation for smaller number of backers, but as we get to greater amounts, the amount that each backer contributes begins to decrease, although the number of data points for large projects is small.
+
+We can use the broom package in order to do some statistical analysis.
+
+```{r linear}
+library(broom)
+
+auto_fit <- lm(backers~usd_pledged_real, data=df) %>%
+  tidy()
+auto_fit
+```
+
+By fitting a linear model we can look at the data and make some assumptions, according to this analysis, we see that our p-value is very low. So there is a statistically significant correlation in our data.
+
+From this tutorial we analyzed the Kickstarter data and were able to see which projects tended to get the most funding and which projects tended to succeed more. We looked at categories and their success vs failures, and saw that most categories failed except for a few. We also saw which categories had the most amount of overall pledge money.
