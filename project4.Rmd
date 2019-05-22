@@ -1,0 +1,49 @@
+---
+title: "CMSC320Project4"
+author: "Titus Rasmussen"
+date: "May 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup data
+
+```{r loadArrests}
+library(tidyverse)
+library(stringr)
+
+arrest_tab <- read_csv("http://www.hcbravo.org/IntroDataSci/misc/BPD_Arrests.csv")
+dat <- arrest_tab %>% 
+  filter(!is.na(`Location 1`)) %>%
+  separate(`Location 1`, c("lat","lng"), sep=",") %>%
+  mutate(lat=as.numeric(str_replace(lat, "\\(", ""))) %>%
+  mutate(lng=as.numeric(str_replace(lng, "\\)", ""))) %>%
+  sample_n(2000)
+dat
+```
+
+## This map shows the distribution of arrests by gender in Baltimore, red represents Males and blue represents Females. The less opaque concentrations denotes a greater distribution of that gender.
+
+```{r distribution}
+library(leaflet)
+
+gender_dist <- leaflet(dat) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    radius = 5,
+    popup = ~as.character(sex),
+    color = ~ifelse(sex == 'M', "red", "blue"),
+    stroke = FALSE,
+    fillOpacity = .2
+  ) %>%
+  setView(lat=39.29, lng=-76.61, zoom=12)
+
+gender_dist
+```
+
+
